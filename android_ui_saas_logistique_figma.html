@@ -1,0 +1,553 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --att:#FF6B35;--att2:#E85520;
+  --bg:#F6F5F3;--surface:#FFFFFF;--surface2:#F0EFED;
+  --ink1:#1A1A1A;--ink2:#5C5C5C;--ink3:#9A9A9A;
+  --border:#E2E0DC;
+  --green:#2E7D32;--green-bg:#E8F5E9;
+  --blue:#1565C0;--blue-bg:#E3F2FD;
+  --red:#C62828;--red-bg:#FFEBEE;
+  --amber:#E65100;--amber-bg:#FFF3E0;
+  --radius:16px;--radius-sm:10px;--radius-xs:6px;
+}
+
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);}
+
+.canvas{background:var(--bg);padding:24px 16px;display:flex;flex-direction:column;gap:32px;}
+
+.section-label{font-size:11px;font-weight:500;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
+
+.screens-row{display:flex;gap:20px;align-items:flex-start;overflow-x:auto;padding-bottom:4px;}
+.screens-row::-webkit-scrollbar{height:3px;}
+.screens-row::-webkit-scrollbar-track{background:var(--bg);}
+.screens-row::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+.phone{width:200px;flex-shrink:0;background:var(--surface);border-radius:28px;overflow:hidden;border:1.5px solid #D0CEC9;position:relative;}
+.phone.active{border-color:var(--att);border-width:2px;}
+
+.status-bar{background:#FFFFFF;padding:8px 16px 4px;display:flex;justify-content:space-between;align-items:center;}
+.status-time{font-size:11px;font-weight:500;color:var(--ink1);}
+.status-icons{display:flex;gap:4px;align-items:center;}
+.si{width:14px;height:9px;background:var(--ink1);border-radius:1px;opacity:.7;}
+.si-wifi{width:12px;height:9px;border-radius:50% 50% 0 0;background:none;border:1.5px solid var(--ink1);border-bottom:none;opacity:.7;}
+.si-bat{width:18px;height:9px;border:1.5px solid var(--ink1);border-radius:2px;position:relative;opacity:.7;}
+.si-bat::after{content:'';position:absolute;right:-4px;top:2px;width:3px;height:5px;background:var(--ink1);border-radius:0 1px 1px 0;}
+.si-bat-fill{width:12px;height:5px;background:var(--ink1);border-radius:1px;margin:1px;}
+
+.app-bar{background:#FFFFFF;padding:6px 12px 8px;display:flex;align-items:center;justify-content:space-between;border-bottom:.5px solid var(--border);}
+.app-bar-title{font-size:13px;font-weight:500;color:var(--ink1);}
+.app-bar-icon{width:28px;height:28px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;}
+.icon-svg{width:14px;height:14px;fill:none;stroke:var(--ink2);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;}
+.icon-svg.filled{fill:var(--ink2);stroke:none;}
+
+.screen-body{padding:10px;background:var(--bg);min-height:340px;display:flex;flex-direction:column;gap:8px;}
+
+.card{background:var(--surface);border-radius:var(--radius-sm);padding:10px;border:.5px solid var(--border);}
+.card-sm{background:var(--surface);border-radius:var(--radius-xs);padding:8px;border:.5px solid var(--border);}
+
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.kpi{background:var(--surface);border-radius:var(--radius-xs);padding:8px;border:.5px solid var(--border);}
+.kpi-label{font-size:9px;color:var(--ink3);margin-bottom:3px;}
+.kpi-val{font-size:15px;font-weight:500;color:var(--ink1);}
+.kpi-val.att{color:var(--att2);}
+.kpi-delta{font-size:8px;color:var(--green);margin-top:1px;}
+
+.alert-band{background:var(--att);border-radius:var(--radius-xs);padding:7px 10px;display:flex;align-items:center;justify-content:space-between;}
+.alert-text{font-size:10px;font-weight:500;color:#fff;}
+.alert-chip{background:rgba(255,255,255,.25);border-radius:99px;padding:2px 7px;font-size:9px;color:#fff;font-weight:500;}
+
+.chart-mini{background:var(--surface);border-radius:var(--radius-xs);padding:8px;border:.5px solid var(--border);height:58px;position:relative;overflow:hidden;}
+.chart-label{font-size:9px;color:var(--ink3);margin-bottom:4px;}
+.chart-bars{display:flex;gap:3px;align-items:flex-end;height:36px;}
+.bar{flex:1;border-radius:2px 2px 0 0;background:var(--surface2);}
+.bar.hi{background:#FFCBB8;}
+.bar.att{background:var(--att);}
+
+.order-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:.5px solid var(--border);}
+.order-row:last-child{border:none;padding-bottom:0;}
+.order-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.order-info{flex:1;min-width:0;}
+.order-name{font-size:10px;font-weight:500;color:var(--ink1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.order-sub{font-size:9px;color:var(--ink3);}
+.order-badge{padding:2px 6px;border-radius:99px;font-size:8px;font-weight:500;}
+
+.badge-exp{background:var(--blue-bg);color:var(--blue);}
+.badge-prep{background:var(--amber-bg);color:var(--amber);}
+.badge-liv{background:var(--green-bg);color:var(--green);}
+.badge-brou{background:var(--surface2);color:var(--ink2);}
+
+.nav-bar{background:#FFFFFF;border-top:.5px solid var(--border);display:flex;padding:6px 4px 10px;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;}
+.nav-icon{width:20px;height:20px;display:flex;align-items:center;justify-content:center;position:relative;}
+.nav-label{font-size:8px;color:var(--ink3);}
+.nav-item.active .nav-label{color:var(--att);font-weight:500;}
+.nav-dot{width:3px;height:3px;border-radius:50%;background:var(--att);position:absolute;top:-2px;right:-2px;}
+
+.fab{width:44px;height:44px;border-radius:14px;background:var(--att);display:flex;align-items:center;justify-content:center;align-self:flex-end;margin-bottom:2px;}
+
+.chip-row{display:flex;gap:5px;overflow:hidden;}
+.chip{padding:4px 9px;border-radius:99px;font-size:9px;border:.5px solid var(--border);background:var(--surface);color:var(--ink2);white-space:nowrap;}
+.chip.sel{background:var(--att);border-color:var(--att);color:#fff;font-weight:500;}
+
+.prod-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:.5px solid var(--border);}
+.prod-row:last-child{border:none;padding-bottom:0;}
+.prod-img{width:28px;height:28px;border-radius:6px;background:var(--surface2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;}
+.prod-info{flex:1;min-width:0;}
+.prod-name{font-size:10px;font-weight:500;color:var(--ink1);}
+.prod-stock{font-size:9px;color:var(--ink3);}
+.stock-pill{padding:2px 7px;border-radius:99px;font-size:8px;font-weight:500;}
+.stock-ok{background:var(--green-bg);color:var(--green);}
+.stock-warn{background:var(--red-bg);color:var(--red);}
+
+.scan-btn{background:var(--att);border-radius:var(--radius-xs);padding:9px;display:flex;align-items:center;justify-content:center;gap:6px;}
+.scan-text{font-size:10px;font-weight:500;color:#fff;}
+
+.map-placeholder{background:#E8EEF5;border-radius:var(--radius-xs);height:120px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.map-grid{position:absolute;inset:0;opacity:.15;}
+.map-label{font-size:9px;color:var(--ink2);font-weight:500;z-index:1;}
+.map-pin{width:20px;height:24px;position:absolute;}
+.pin-body{width:20px;height:20px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #fff;}
+.pin-dot{width:8px;height:8px;border-radius:50%;background:#fff;position:absolute;top:4px;left:4px;}
+
+.delivery-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:.5px solid var(--border);}
+.delivery-row:last-child{border:none;padding-bottom:0;}
+.del-avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;flex-shrink:0;}
+.del-info{flex:1;min-width:0;}
+.del-name{font-size:10px;font-weight:500;color:var(--ink1);}
+.del-sub{font-size:9px;color:var(--ink3);}
+.del-eta{font-size:9px;font-weight:500;color:var(--att2);}
+
+.bs-handle{width:32px;height:3px;background:var(--border);border-radius:2px;margin:0 auto 8px;}
+
+.input-field{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius-xs);padding:8px 10px;font-size:10px;color:var(--ink1);width:100%;position:relative;}
+.input-label{font-size:9px;color:var(--ink3);margin-bottom:3px;}
+.input-active{border-color:var(--att);}
+
+.mm-option{display:flex;align-items:center;gap:8px;padding:9px;border:.5px solid var(--border);border-radius:var(--radius-xs);background:var(--surface);}
+.mm-logo{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:500;}
+.mm-name{font-size:10px;font-weight:500;color:var(--ink1);}
+.mm-sub{font-size:9px;color:var(--ink3);}
+.radio-dot{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--border);margin-left:auto;flex-shrink:0;}
+.radio-dot.sel{border-color:var(--att);background:var(--att);}
+
+.btn-primary{background:var(--att);border-radius:var(--radius-xs);padding:11px;text-align:center;font-size:11px;font-weight:500;color:#fff;width:100%;}
+.btn-ghost{border:.5px solid var(--border);border-radius:var(--radius-xs);padding:9px;text-align:center;font-size:10px;color:var(--ink2);width:100%;}
+
+.notif-row{display:flex;gap:8px;padding:8px 0;border-bottom:.5px solid var(--border);}
+.notif-row:last-child{border:none;padding-bottom:0;}
+.notif-icon{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.notif-content{flex:1;min-width:0;}
+.notif-title{font-size:10px;font-weight:500;color:var(--ink1);}
+.notif-body{font-size:9px;color:var(--ink3);margin-top:1px;line-height:1.4;}
+.notif-time{font-size:8px;color:var(--ink3);margin-top:2px;}
+.unread-dot{width:6px;height:6px;border-radius:50%;background:var(--att);flex-shrink:0;margin-top:4px;}
+
+.screen-name{font-size:11px;font-weight:500;color:var(--ink2);text-align:center;margin-top:10px;}
+.screen-tag{font-size:9px;color:var(--ink3);text-align:center;margin-top:2px;}
+
+.figma-badge{display:inline-flex;align-items:center;gap:5px;background:var(--surface);border:.5px solid var(--border);border-radius:99px;padding:4px 10px;font-size:10px;color:var(--ink2);}
+.figma-dot{width:8px;height:8px;border-radius:50%;background:#1ABCFE;}
+.figma-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.comp-label{font-size:10px;color:var(--ink3);}
+</style>
+
+<h2 class="sr-only">Maquettes Android Material Design 3 — SaaS Logistique, 5 écrans clés : Dashboard, Commandes, Stock, Livraisons, Paiement. Style Figma professionnel.</h2>
+
+<div class="canvas">
+
+<div class="figma-bar">
+  <div>
+    <div style="font-size:13px;font-weight:500;color:var(--ink1);">SaaS Logistique — Android</div>
+    <div class="comp-label">Material Design 3 · 5 écrans clés · #FF6B35 accent</div>
+  </div>
+  <div class="figma-badge"><div class="figma-dot"></div>Figma-grade mockup</div>
+</div>
+
+<div class="screens-row">
+
+  <!-- SCREEN 1: Dashboard -->
+  <div>
+    <div class="phone active">
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <div class="si-wifi"></div>
+          <div class="si" style="width:10px;height:9px;border-radius:1px;"></div>
+          <div class="si-bat"><div class="si-bat-fill"></div></div>
+        </div>
+      </div>
+      <div class="app-bar">
+        <div>
+          <div style="font-size:9px;color:var(--ink3);">Bonjour,</div>
+          <div class="app-bar-title">Jean-Pierre ↓</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <div class="app-bar-icon" style="position:relative;">
+            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <div style="position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;background:var(--att);border:1.5px solid #fff;"></div>
+          </div>
+          <div class="app-bar-icon">
+            <svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="screen-body">
+        <div class="alert-band">
+          <div>
+            <div class="alert-text">3 stocks critiques</div>
+            <div style="font-size:8px;color:rgba(255,255,255,.75);margin-top:1px;">Action requise maintenant</div>
+          </div>
+          <div class="alert-chip">Voir →</div>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="kpi-label">CA aujourd'hui</div>
+            <div class="kpi-val att">485K</div>
+            <div class="kpi-delta">↑ +12% vs hier</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Commandes actives</div>
+            <div class="kpi-val">24</div>
+            <div class="kpi-delta" style="color:var(--blue);">6 expédiées</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Livreurs actifs</div>
+            <div class="kpi-val">7</div>
+            <div class="kpi-delta">5 en route</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Taux livraison</div>
+            <div class="kpi-val">94%</div>
+            <div class="kpi-delta">↑ +2% semaine</div>
+          </div>
+        </div>
+        <div class="chart-mini">
+          <div class="chart-label">Commandes — 7 derniers jours</div>
+          <div class="chart-bars">
+            <div class="bar" style="height:40%;"></div>
+            <div class="bar hi" style="height:60%;"></div>
+            <div class="bar" style="height:50%;"></div>
+            <div class="bar hi" style="height:75%;"></div>
+            <div class="bar" style="height:55%;"></div>
+            <div class="bar hi" style="height:80%;"></div>
+            <div class="bar att" style="height:90%;"></div>
+          </div>
+        </div>
+        <div class="card-sm">
+          <div style="font-size:9px;font-weight:500;color:var(--ink2);margin-bottom:6px;">Dernières commandes</div>
+          <div class="order-row">
+            <div class="order-dot" style="background:var(--blue);"></div>
+            <div class="order-info"><div class="order-name">Marché Central SARL</div><div class="order-sub">ORD-2847 · 12 500 FCFA</div></div>
+            <div class="order-badge badge-exp">Expédié</div>
+          </div>
+          <div class="order-row">
+            <div class="order-dot" style="background:var(--amber);"></div>
+            <div class="order-info"><div class="order-name">Boulangerie Kouam</div><div class="order-sub">ORD-2846 · 8 200 FCFA</div></div>
+            <div class="order-badge badge-prep">Préparé</div>
+          </div>
+          <div class="order-row">
+            <div class="order-dot" style="background:var(--green);"></div>
+            <div class="order-info"><div class="order-name">Épicerie Ngo Bassa</div><div class="order-sub">ORD-2845 · 3 750 FCFA</div></div>
+            <div class="order-badge badge-liv">Livré</div>
+          </div>
+        </div>
+      </div>
+      <div class="nav-bar">
+        <div class="nav-item active">
+          <div class="nav-icon"><svg class="icon-svg" style="width:18px;height:18px;" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
+          <div class="nav-label" style="color:var(--att);">Accueil</div>
+        </div>
+        <div class="nav-item">
+          <div class="nav-icon"><svg class="icon-svg" style="width:18px;height:18px;" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
+          <div class="nav-label">Commandes</div>
+        </div>
+        <div class="nav-item">
+          <div class="nav-icon"><svg class="icon-svg" style="width:18px;height:18px;" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
+          <div class="nav-label">Stock</div>
+        </div>
+        <div class="nav-item">
+          <div class="nav-icon"><svg class="icon-svg" style="width:18px;height:18px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div>
+          <div class="nav-label">Livraisons</div>
+        </div>
+        <div class="nav-item">
+          <div class="nav-icon"><svg class="icon-svg" style="width:18px;height:18px;" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+          <div class="nav-label">Profil</div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-name">Dashboard</div>
+    <div class="screen-tag">Tab 1 · Home · KPIs temps réel</div>
+  </div>
+
+  <!-- SCREEN 2: Commandes -->
+  <div>
+    <div class="phone">
+      <div class="status-bar"><span class="status-time">9:41</span><div class="status-icons"><div class="si-wifi"></div><div class="si" style="width:10px;height:9px;"></div><div class="si-bat"><div class="si-bat-fill"></div></div></div></div>
+      <div class="app-bar">
+        <div class="app-bar-title">Commandes</div>
+        <div style="display:flex;gap:5px;">
+          <div class="app-bar-icon"><svg class="icon-svg" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+          <div class="app-bar-icon"><svg class="icon-svg" viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/></svg></div>
+        </div>
+      </div>
+      <div class="screen-body" style="padding:8px;">
+        <div class="chip-row">
+          <div class="chip sel">Tous (24)</div>
+          <div class="chip">Expédié (6)</div>
+          <div class="chip">Préparé (5)</div>
+          <div class="chip">Livré (9)</div>
+        </div>
+        <div style="display:flex;gap:5px;margin-top:2px;">
+          <div style="flex:1;background:var(--surface);border-radius:var(--radius-xs);border:.5px solid var(--border);padding:7px 8px;font-size:9px;color:var(--ink3);">
+            <svg style="width:10px;height:10px;vertical-align:middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Rechercher commande...
+          </div>
+        </div>
+        <div class="card-sm" style="padding:0;overflow:hidden;">
+          <div style="background:var(--surface2);padding:6px 10px;font-size:9px;color:var(--ink3);font-weight:500;">Aujourd'hui — 8 commandes</div>
+          <div style="padding:0 10px;">
+          <div class="order-row">
+            <div class="order-dot" style="background:var(--att);"></div>
+            <div class="order-info"><div class="order-name">Supermarché Nlongkak</div><div class="order-sub">ORD-2850 · 24 600 FCFA · 14h30</div></div>
+            <div class="order-badge badge-brou">Brouillon</div>
+          </div>
+          <div class="order-row">
+            <div class="order-dot" style="background:var(--blue);"></div>
+            <div class="order-info"><div class="order-name">Marché Central SARL</div><div class="order-sub">ORD-2847 · 12 500 FCFA · 11h05</div></div>
+            <div class="order-badge badge-exp">Expédié</div>
+          </div>
+          <div class="order-row">
+            <div class="order-dot" style="background:var(--amber);"></div>
+            <div class="order-info"><div class="order-name">Boulangerie Kouam</div><div class="order-sub">ORD-2846 · 8 200 FCFA · 09h20</div></div>
+            <div class="order-badge badge-prep">Préparé</div>
+          </div>
+          <div class="order-row">
+            <div class="order-dot" style="background:var(--green);"></div>
+            <div class="order-info"><div class="order-name">Épicerie Ngo Bassa</div><div class="order-sub">ORD-2845 · 3 750 FCFA · 08h15</div></div>
+            <div class="order-badge badge-liv">Livré</div>
+          </div>
+          </div>
+        </div>
+        <div class="card-sm" style="padding:0;overflow:hidden;">
+          <div style="background:var(--surface2);padding:6px 10px;font-size:9px;color:var(--ink3);font-weight:500;">Hier — 5 commandes</div>
+          <div style="padding:0 10px;">
+          <div class="order-row">
+            <div class="order-dot" style="background:var(--green);"></div>
+            <div class="order-info"><div class="order-name">Shop Bastos Premium</div><div class="order-sub">ORD-2841 · 31 200 FCFA · 16h45</div></div>
+            <div class="order-badge badge-liv">Livré</div>
+          </div>
+          <div class="order-row">
+            <div class="order-dot" style="background:var(--green);"></div>
+            <div class="order-info"><div class="order-name">Pharma Croix-Rouge</div><div class="order-sub">ORD-2838 · 9 800 FCFA · 14h10</div></div>
+            <div class="order-badge badge-liv">Livré</div>
+          </div>
+          </div>
+        </div>
+      </div>
+      <div style="position:relative;">
+        <div class="nav-bar">
+          <div class="nav-item"><div class="nav-icon"><svg class="icon-svg" style="width:18px;height:18px;" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div><div class="nav-label">Accueil</div></div>
+          <div class="nav-item active"><div class="nav-icon"><svg class="icon-svg" style="width:18px;height:18px;" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div><div class="nav-label" style="color:var(--att);">Commandes</div></div>
+          <div class="nav-item"><div class="nav-icon"></div><div class="nav-label">Stock</div></div>
+          <div class="nav-item"><div class="nav-icon"></div><div class="nav-label">Livraisons</div></div>
+          <div class="nav-item"><div class="nav-icon"></div><div class="nav-label">Profil</div></div>
+        </div>
+        <div style="position:absolute;bottom:14px;right:12px;width:40px;height:40px;border-radius:12px;background:var(--att);display:flex;align-items:center;justify-content:center;">
+          <svg style="width:18px;height:18px;" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+      </div>
+    </div>
+    <div class="screen-name">Commandes</div>
+    <div class="screen-tag">Tab 2 · Liste filtrée · FAB orange</div>
+  </div>
+
+  <!-- SCREEN 3: Stock -->
+  <div>
+    <div class="phone">
+      <div class="status-bar"><span class="status-time">9:41</span><div class="status-icons"><div class="si-wifi"></div><div class="si" style="width:10px;height:9px;"></div><div class="si-bat"><div class="si-bat-fill"></div></div></div></div>
+      <div class="app-bar">
+        <div class="app-bar-title">Stock & Inventaire</div>
+        <div class="app-bar-icon"><svg class="icon-svg" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+      </div>
+      <div class="screen-body" style="padding:8px;">
+        <div class="kpi-grid">
+          <div class="kpi"><div class="kpi-label">Total produits</div><div class="kpi-val">348</div></div>
+          <div class="kpi"><div class="kpi-label">Alertes stock</div><div class="kpi-val" style="color:var(--red);">3</div></div>
+          <div class="kpi"><div class="kpi-label">Valeur stock</div><div class="kpi-val">2,4M</div></div>
+          <div class="kpi"><div class="kpi-label">Mvt. aujourd'hui</div><div class="kpi-val">18</div></div>
+        </div>
+        <div class="scan-btn">
+          <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h2v2H7zm8 0h2v2h-2zm-8 8h2v2H7zm8 0h2v2h-2z"/></svg>
+          <div class="scan-text">Scanner code-barres / QR</div>
+        </div>
+        <div style="background:var(--red-bg);border-radius:var(--radius-xs);padding:8px 10px;border-left:3px solid var(--red);">
+          <div style="font-size:9px;font-weight:500;color:var(--red);margin-bottom:5px;">Alertes rupture de stock</div>
+          <div class="order-row" style="border:none;padding:3px 0;">
+            <div class="order-dot" style="background:var(--red);"></div>
+            <div class="order-info"><div class="order-name" style="font-size:9px;">Huile palme 5L</div><div class="order-sub">Stock: 2 · Seuil: 20</div></div>
+            <div class="order-badge" style="background:var(--red-bg);color:var(--red);">Critique</div>
+          </div>
+          <div class="order-row" style="border:none;padding:3px 0;">
+            <div class="order-dot" style="background:var(--amber);"></div>
+            <div class="order-info"><div class="order-name" style="font-size:9px;">Sucre 50kg sac</div><div class="order-sub">Stock: 5 · Seuil: 15</div></div>
+            <div class="order-badge badge-prep">Faible</div>
+          </div>
+        </div>
+        <div class="card-sm">
+          <div style="font-size:9px;font-weight:500;color:var(--ink2);margin-bottom:6px;">Produits récents</div>
+          <div class="prod-row">
+            <div class="prod-img">🛢</div>
+            <div class="prod-info"><div class="prod-name">Huile palme 1L</div><div class="prod-stock">EAN: 6281234 · 142 unités</div></div>
+            <div class="stock-pill stock-ok">OK</div>
+          </div>
+          <div class="prod-row">
+            <div class="prod-img">🧂</div>
+            <div class="prod-info"><div class="prod-name">Sel iodé 1kg</div><div class="prod-stock">EAN: 6289876 · 87 unités</div></div>
+            <div class="stock-pill stock-ok">OK</div>
+          </div>
+          <div class="prod-row">
+            <div class="prod-img">🌽</div>
+            <div class="prod-info"><div class="prod-name">Farine maïs 25kg</div><div class="prod-stock">EAN: 6283456 · 8 unités</div></div>
+            <div class="stock-pill stock-warn">Faible</div>
+          </div>
+        </div>
+      </div>
+      <div class="nav-bar">
+        <div class="nav-item"><div class="nav-icon"></div><div class="nav-label">Accueil</div></div>
+        <div class="nav-item"><div class="nav-icon"></div><div class="nav-label">Commandes</div></div>
+        <div class="nav-item active"><div class="nav-icon"><svg class="icon-svg" style="width:18px;height:18px;" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div><div class="nav-label" style="color:var(--att);">Stock</div></div>
+        <div class="nav-item"><div class="nav-icon"></div><div class="nav-label">Livraisons</div></div>
+        <div class="nav-item"><div class="nav-icon"></div><div class="nav-label">Profil</div></div>
+      </div>
+    </div>
+    <div class="screen-name">Stock & Inventaire</div>
+    <div class="screen-tag">Tab 3 · Scanner · Alertes rupture</div>
+  </div>
+
+  <!-- SCREEN 4: Livraisons -->
+  <div>
+    <div class="phone">
+      <div class="status-bar"><span class="status-time">9:41</span><div class="status-icons"><div class="si-wifi"></div><div class="si" style="width:10px;height:9px;"></div><div class="si-bat"><div class="si-bat-fill"></div></div></div></div>
+      <div class="app-bar">
+        <div class="app-bar-title">Livraisons</div>
+        <div style="display:flex;gap:5px;">
+          <div class="app-bar-icon"><svg class="icon-svg" viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></div>
+        </div>
+      </div>
+      <div class="screen-body" style="padding:0;gap:0;background:var(--surface);">
+        <div class="map-placeholder" style="border-radius:0;height:140px;margin:0;">
+          <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:.08;" viewBox="0 0 200 140"><line x1="0" y1="28" x2="200" y2="28" stroke="var(--ink1)" stroke-width=".5"/><line x1="0" y1="56" x2="200" y2="56" stroke="var(--ink1)" stroke-width=".5"/><line x1="0" y1="84" x2="200" y2="84" stroke="var(--ink1)" stroke-width=".5"/><line x1="0" y1="112" x2="200" y2="112" stroke="var(--ink1)" stroke-width=".5"/><line x1="40" y1="0" x2="40" y2="140" stroke="var(--ink1)" stroke-width=".5"/><line x1="80" y1="0" x2="80" y2="140" stroke="var(--ink1)" stroke-width=".5"/><line x1="120" y1="0" x2="120" y2="140" stroke="var(--ink1)" stroke-width=".5"/><line x1="160" y1="0" x2="160" y2="140" stroke="var(--ink1)" stroke-width=".5"/></svg>
+          <svg style="position:absolute;top:28px;left:45px;width:22px;height:28px;" viewBox="0 0 22 28"><ellipse cx="11" cy="26" rx="5" ry="2" fill="rgba(0,0,0,.1)"/><path d="M11 0C6.49 0 2.83 3.66 2.83 8.17 2.83 14.29 11 24 11 24S19.17 14.29 19.17 8.17C19.17 3.66 15.51 0 11 0z" fill="#FF6B35"/><circle cx="11" cy="8" r="4" fill="#fff"/></svg>
+          <svg style="position:absolute;top:55px;left:95px;width:22px;height:28px;" viewBox="0 0 22 28"><path d="M11 0C6.49 0 2.83 3.66 2.83 8.17 2.83 14.29 11 24 11 24S19.17 14.29 19.17 8.17C19.17 3.66 15.51 0 11 0z" fill="#1565C0"/><circle cx="11" cy="8" r="4" fill="#fff"/></svg>
+          <svg style="position:absolute;top:40px;left:135px;width:22px;height:28px;" viewBox="0 0 22 28"><path d="M11 0C6.49 0 2.83 3.66 2.83 8.17 2.83 14.29 11 24 11 24S19.17 14.29 19.17 8.17C19.17 3.66 15.51 0 11 0z" fill="#2E7D32"/><circle cx="11" cy="8" r="4" fill="#fff"/></svg>
+          <div style="position:absolute;top:8px;left:8px;background:rgba(255,255,255,.9);border-radius:6px;padding:4px 8px;font-size:9px;color:var(--ink2);font-weight:500;">GPS temps réel · 30s</div>
+          <div style="position:absolute;top:8px;right:8px;background:var(--surface);border-radius:6px;padding:4px 8px;border:.5px solid var(--border);">
+            <svg style="width:12px;height:12px;" viewBox="0 0 24 24" fill="none" stroke="var(--ink2)" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+          </div>
+        </div>
+        <div style="padding:8px;background:var(--bg);flex:1;display:flex;flex-direction:column;gap:7px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="font-size:10px;font-weight:500;color:var(--ink1);">Livraisons du jour · 12</div>
+            <div class="chip-row"><div class="chip sel">Tous</div><div class="chip">En route</div><div class="chip">Livré</div></div>
+          </div>
+          <div class="card-sm">
+            <div class="delivery-row">
+              <div class="del-avatar" style="background:#FFCBB8;color:#993C1D;">AK</div>
+              <div class="del-info">
+                <div class="del-name">Akono Jean-Baptiste</div>
+                <div class="del-sub">4 livraisons · Bastos → Nlongkak</div>
+              </div>
+              <div class="del-eta">ETA 14min</div>
+            </div>
+            <div class="delivery-row">
+              <div class="del-avatar" style="background:#B5D4F4;color:#185FA5;">MN</div>
+              <div class="del-info">
+                <div class="del-name">Manga Noel</div>
+                <div class="del-sub">3 livraisons · Centre-ville</div>
+              </div>
+              <div class="del-eta">ETA 28min</div>
+            </div>
+            <div class="delivery-row">
+              <div class="del-avatar" style="background:#C0DD97;color:#3B6D11;">BT</div>
+              <div class="del-info">
+                <div class="del-name">Biya Thomas</div>
+                <div class="del-sub">5 livraisons · Biyem-Assi</div>
+              </div>
+              <div class="del-eta">ETA 42min</div>
+            </div>
+          </div>
+          <div class="btn-primary">Assigner un livreur</div>
+        </div>
+      </div>
+      <div class="nav-bar">
+        <div class="nav-item"><div class="nav-icon"></div><div class="nav-label">Accueil</div></div>
+        <div class="nav-item"><div class="nav-icon"></div><div class="nav-label">Commandes</div></div>
+        <div class="nav-item"><div class="nav-icon"></div><div class="nav-label">Stock</div></div>
+        <div class="nav-item active"><div class="nav-icon"><svg class="icon-svg" style="width:18px;height:18px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div><div class="nav-label" style="color:var(--att);">Livraisons</div></div>
+        <div class="nav-item"><div class="nav-icon"></div><div class="nav-label">Profil</div></div>
+      </div>
+    </div>
+    <div class="screen-name">Logistique GPS</div>
+    <div class="screen-tag">Tab 4 · Carte + Bottom sheet · Temps réel</div>
+  </div>
+
+  <!-- SCREEN 5: Paiement Bottom Sheet -->
+  <div>
+    <div class="phone">
+      <div class="status-bar"><span class="status-time">9:41</span><div class="status-icons"><div class="si-wifi"></div><div class="si" style="width:10px;height:9px;"></div><div class="si-bat"><div class="si-bat-fill"></div></div></div></div>
+      <div class="app-bar" style="opacity:.4;">
+        <div class="app-bar-title">Détail commande</div>
+        <div class="app-bar-icon"><svg class="icon-svg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+      </div>
+      <div style="background:rgba(0,0,0,.35);flex:1;min-height:130px;display:flex;align-items:flex-end;">
+        <div style="width:100%;background:var(--surface);border-radius:20px 20px 0 0;padding:10px 12px 16px;">
+          <div class="bs-handle"></div>
+          <div style="font-size:12px;font-weight:500;color:var(--ink1);margin-bottom:4px;">Enregistrer un paiement</div>
+          <div style="font-size:9px;color:var(--ink3);margin-bottom:10px;">ORD-2847 · Marché Central SARL · 12 500 FCFA</div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;">
+            <div class="input-label">Mode de paiement</div>
+            <div class="mm-option" style="border-color:var(--att);">
+              <div class="mm-logo" style="background:#FFCBB8;color:#993C1D;font-size:7px;">MTN</div>
+              <div><div class="mm-name">MTN Mobile Money</div><div class="mm-sub">Paiement instantané</div></div>
+              <div class="radio-dot sel"></div>
+            </div>
+            <div class="mm-option">
+              <div class="mm-logo" style="background:#FFEDD5;color:#C2410C;font-size:6px;">ORG</div>
+              <div><div class="mm-name">Orange Money</div><div class="mm-sub">Paiement instantané</div></div>
+              <div class="radio-dot"></div>
+            </div>
+            <div class="mm-option">
+              <div class="mm-logo" style="background:var(--surface2);color:var(--ink2);font-size:9px;">💵</div>
+              <div><div class="mm-name">Cash à la livraison</div><div class="mm-sub">Enregistrement manuel</div></div>
+              <div class="radio-dot"></div>
+            </div>
+          </div>
+          <div style="margin-bottom:8px;">
+            <div class="input-label">Numéro Mobile Money</div>
+            <div class="input-field input-active">+237 6XX XXX XXX</div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-radius:var(--radius-xs);padding:8px 10px;margin-bottom:10px;">
+            <div style="font-size:10px;color:var(--ink2);">Montant total</div>
+            <div style="font-size:14px;font-weight:500;color:var(--ink1);">12 500 FCFA</div>
+          </div>
+          <div class="btn-primary">Confirmer le paiement · 12 500 FCFA</div>
+          <div class="btn-ghost" style="margin-top:6px;">Annuler</div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-name">Paiement Mobile Money</div>
+    <div class="screen-tag">Bottom Sheet Material 3 · MTN / Orange</div>
+  </div>
+
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:8px;padding-top:4px;">
+  <button onclick="sendPrompt('Montre moi maintenant les écrans iOS pour les mêmes 5 écrans')" style="font-size:12px;padding:8px 16px;border-radius:99px;background:var(--surface);border:.5px solid var(--border);color:var(--ink2);cursor:pointer;">Voir la version iOS ↗</button>
+  <button onclick="sendPrompt('Montre moi le détail d\'une commande en plein écran Android')" style="font-size:12px;padding:8px 16px;border-radius:99px;background:var(--surface);border:.5px solid var(--border);color:var(--ink2);cursor:pointer;">Détail commande Android ↗</button>
+  <button onclick="sendPrompt('Montre moi l\'écran scanner code-barres Android en plein écran')" style="font-size:12px;padding:8px 16px;border-radius:99px;background:var(--surface);border:.5px solid var(--border);color:var(--ink2);cursor:pointer;">Écran scanner ↗</button>
+  <button onclick="sendPrompt('Montre moi l\'onboarding wizard 5 étapes Android')" style="font-size:12px;padding:8px 16px;border-radius:99px;background:var(--surface);border:.5px solid var(--border);color:var(--ink2);cursor:pointer;">Onboarding wizard ↗</button>
+</div>
+
+</div>
